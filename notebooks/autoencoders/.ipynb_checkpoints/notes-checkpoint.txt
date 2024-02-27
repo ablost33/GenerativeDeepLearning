@@ -1,0 +1,29 @@
+A couple of notes:
+
+    Variational Autoencoders have continuous latent spaces, allowing easy random sampling. The VAE will output two vectors of size n: a vector of means z_means and a vector of standard deviations z_std_derivations. The ith element of z_means and z_std_derivations will be the mean and standard derivation of the ith random variable Xi from which we sample.
+    
+Defn: 
+    A random variable is a variable whos value is unknown or a function that assigns values to each of an experiments outcomes.
+
+The idea is we sample from Xi which we pass onto the encoder. So for example:
+
+z_means = [0.1, 1.2, 0.2, ...]
+z_std_deviations = [0.2, 0.5, 0.8, ...]
+Now we sample from this space to obtain
+
+X1 = N(0.1, 0.2^2)
+X2 = N(1.2, 0.5^2)
+X3 = N(0.2, 0.8^2)
+...
+
+Thus outputing a final sampled vector of:
+[0.28, 1.65, 0.92, ...]
+
+What this means is the actual encoding will somewhat vary on every single pass due to the random sampling of a random variable. Intuitively, the mean vector will control where the encoding of an input will be centered around, while the standard deviation controls how much from the mean the encoding can vary (so the general area). 
+
+What we ideally want are encdings as close as possible to each other while still being distinct. To force this we introduce KL divergence in the loss function.
+
+Defn:
+    The KL-divergence between two probability distributions measures how much they diverge from each other.
+    
+Minimizing KL divergence in this context means optimizing the probability distribution parameters to closely resemble that of the target distribution. In the context of VAE, KL loss is sum of all the KL divergence between the distribution of our random sampling Xi, and the standard normal distrbution. What this means intuitevely is that KL Loss encourages the encoder to distribute the encodings evenly around the latent space. If our encoder tries to "cheat" by clustering them apart into specific regions away from the origin, it will be penalized. But, the problem with only using KL loss results in encodings densely placed near the center of the latent space, and the decoder will find it impossible to decode anything meaningful from this space. So what you really want is to reach an equilibrium between the cluster-forming nature of reconstruction loss, and the dense packing nature of KL loss. 
